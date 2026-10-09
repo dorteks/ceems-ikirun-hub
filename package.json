@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test:imports": "node --test tests/import.test.mjs",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build"
+    "vercel-build": "prisma generate && prisma db push && next build"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
