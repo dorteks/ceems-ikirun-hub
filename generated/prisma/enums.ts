@@ -10,18 +10,13 @@
 */
 
 export const ServiceCenter = {
-  AYEPE_1: 'AYEPE_1',
-  AYEPE_2: 'AYEPE_2',
-  AYETORO: 'AYETORO',
-  GRA: 'GRA',
-  KELEBE_1: 'KELEBE_1',
-  KELEBE_2: 'KELEBE_2',
-  OGO_OLUWA: 'OGO_OLUWA',
-  OKE_FIA: 'OKE_FIA',
-  OKEFIA: 'OKEFIA',
-  OSOGBO_1: 'OSOGBO_1',
-  OSOGBO_2: 'OSOGBO_2',
-  OTA_EFUN: 'OTA_EFUN'
+  EWETA: 'EWETA',
+  ILA: 'ILA',
+  INISA: 'INISA',
+  IRAGBIJI: 'IRAGBIJI',
+  IREE: 'IREE',
+  ODOFUN: 'ODOFUN',
+  STATION_ROAD: 'STATION_ROAD'
 } as const
 
 export type ServiceCenter = (typeof ServiceCenter)[keyof typeof ServiceCenter]
@@ -47,7 +42,8 @@ export const MeterType = {
   POSTPAID: 'POSTPAID',
   TC_AND_P: 'TC_AND_P',
   HOLLEY: 'HOLLEY',
-  NEW_HAMPSHIRE: 'NEW_HAMPSHIRE'
+  NEW_HAMPSHIRE: 'NEW_HAMPSHIRE',
+  PAKTIM: 'PAKTIM'
 } as const
 
 export type MeterType = (typeof MeterType)[keyof typeof MeterType]

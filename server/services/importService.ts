@@ -3,6 +3,25 @@
 import * as XLSX from "xlsx";
 import { importCustomers } from "./customerService";
 import { prisma } from "@/server/db/prisma";
+import {
+  CustomerCategory,
+  CustomerType,
+  MeterPhase,
+  MeterType,
+  PremiseType,
+  ServiceCenter,
+  Status,
+} from "@/lib/prisma-enums";
+
+const CUSTOMER_ENUMS = {
+  customer_type: CustomerType,
+  customer_category: CustomerCategory,
+  meter_type: MeterType,
+  meter_phase: MeterPhase,
+  premise_type: PremiseType,
+  service_center: ServiceCenter,
+  status: Status,
+};
 
 const HEADER_MAP: Record<string, string> = {
   Account_number: "account_number",
@@ -90,8 +109,13 @@ function normalizeServiceCenter(value: unknown): string | null {
   const normalized = normalizeEnum(value);
   if (!normalized) return null;
 
-  // Prisma enum values are snake_case, e.g. AYEPE_1, OSOGBO_2
+  // Match enum names such as STATION_ROAD.
   return normalized;
+}
+
+function normalizeStatus(value: unknown): string | null {
+  const normalized = normalizeEnum(value);
+  return normalized === "DISCONNECT" ? Status.DISCONNECTED : normalized;
 }
 
 function mapCustomerRow(row: Record<string, unknown>) {
@@ -101,7 +125,7 @@ function mapCustomerRow(row: Record<string, unknown>) {
     customer[dbField] = row[excelHeader];
   }
 
-  return {
+  const mapped: Record<string, unknown> = {
     account_number: cleanValue(customer.account_number),
     meter_number: cleanValue(customer.meter_number),
 
@@ -139,7 +163,7 @@ function mapCustomerRow(row: Record<string, unknown>) {
     feeder_name: cleanValue(customer.feeder_name),
     feeder_band: cleanValue(customer.feeder_band),
 
-    status: normalizeEnum(customer.status),
+    status: normalizeStatus(customer.status),
     business_hub: cleanValue(customer.business_hub),
     region: cleanValue(customer.region),
 
@@ -148,24 +172,22 @@ function mapCustomerRow(row: Record<string, unknown>) {
     enumerator_phone_number: cleanValue(customer.enumerator_phone_number),
 
     remark: cleanValue(customer.remark),
-  } as Record<string, unknown>;
-}
+  };
 
-function validateCustomer(
-  customer: Record<string, unknown>,
-  rowNumber: number,
-) {
-  const errors: string[] = [];
-
-  if (!customer.account_number) errors.push("account_number is required");
-  // if (!customer.surname) errors.push("surname is required");
-  //   if (!customer.first_name) errors.push("first_name is required");
-
-  if (errors.length) {
-    return { valid: false, errors, row: rowNumber };
+  // Keep every row importable; unsupported optional enum values become blank.
+  for (const [field, enumValues] of Object.entries(CUSTOMER_ENUMS)) {
+    const value = mapped[field];
+    const allowedValues: string[] = Object.values(enumValues);
+    if (
+      value !== null &&
+      value !== undefined &&
+      !allowedValues.includes(String(value))
+    ) {
+      mapped[field] = null;
+    }
   }
 
-  return { valid: true, errors: [], row: rowNumber };
+  return mapped;
 }
 
 function normalizeState(value: unknown): string | null {
@@ -176,35 +198,6 @@ function normalizeState(value: unknown): string | null {
     .split(/\s+/)
     .map((s) => s[0].toUpperCase() + s.slice(1))
     .join(" ");
-}
-
-function normalizePhone(value: unknown): string | null {
-  const v = cleanValue(value);
-  if (!v) return null;
-  const digits = v.replace(/\D+/g, "");
-  // assume local format of 11 digits
-  if (digits.length === 11) return digits;
-  // common case: Excel drops leading zero -> 10 digits, prefix it
-  if (digits.length === 10) return "0" + digits;
-  if (digits.length === 13 && digits.startsWith("234"))
-    return "0" + digits.slice(3);
-  return null;
-}
-
-function validateCoordinates(lat: unknown, lon: unknown) {
-  // allow missing lat or lon; only validate whichever value is present
-  if (lat === null && lon === null) return true;
-  if (lat !== null) {
-    const la = Number(lat);
-    if (!Number.isFinite(la)) return false;
-    if (la < -90 || la > 90) return false;
-  }
-  if (lon !== null) {
-    const lo = Number(lon);
-    if (!Number.isFinite(lo)) return false;
-    if (lo < -180 || lo > 180) return false;
-  }
-  return true;
 }
 
 export async function parseAndImportXlsx(
@@ -245,27 +238,6 @@ export async function parseAndImportXlsx(
   }> = [];
 
   for (let i = 0; i < mapped.length; i++) {
-    const rowNum = i + 2;
-    const validation = validateCustomer(mapped[i], rowNum);
-
-    if (mapped[i].nin) {
-      const nin = String(mapped[i].nin).replace(/\D+/g, "");
-      if (nin.length !== 11) validation.errors.push("nin must be 11 digits");
-    }
-
-    if (!validateCoordinates(mapped[i].latitude, mapped[i].longitude)) {
-      validation.errors.push("invalid coordinates");
-    }
-
-    if (validation.errors.length) {
-      errors.push({
-        row: rowNum,
-        errors: validation.errors,
-        data: mapped[i],
-      });
-      continue;
-    }
-
     // normalize some fields
     if (mapped[i].state) {
       mapped[i].state = normalizeState(mapped[i].state);
@@ -320,7 +292,8 @@ export async function parseAndImportXlsx(
     toImport = filtered;
   }
 
-  if (commit && toImport.length) {
+  // Validate the entire file before writing any batch.
+  if (commit && errors.length === 0 && toImport.length) {
     const importResult = await importCustomers(toImport);
     return {
       total_rows: rows.length,
