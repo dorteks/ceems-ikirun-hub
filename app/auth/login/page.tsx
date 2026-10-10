@@ -47,7 +47,7 @@ export default function LoginPage() {
           </span>
 
           <div className="leading-tight">
-            <p className="text-base font-semibold">CEEMS</p>
+            <p className="text-base font-semibold">CEEMS IKIRUN HUB</p>
             <p className="text-xs text-muted-foreground">
               Enumeration Platform
             </p>
@@ -138,9 +138,7 @@ export default function LoginPage() {
             </form>
 
             <div className="mt-4 flex items-center justify-between gap-3 text-sm">
-              <p className="text-muted-foreground">
-                Forgot your password?
-              </p>
+              <p className="text-muted-foreground">Forgot your password?</p>
               <Button asChild variant="link" className="h-auto p-0">
                 <Link href="/auth/forgot-password">Reset it here</Link>
               </Button>

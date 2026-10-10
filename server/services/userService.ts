@@ -17,7 +17,7 @@ type PrismaUserRole =
   | "ENUMERATOR"
   | "VIEWER";
 
-type PrismaHub = "ALL" | "OSOGBO" | "EDE" | "ILE_IFE" | "ILESA";
+type PrismaHub = "ALL" | "OSOGBO" | "EDE" | "ILE_IFE" | "ILESA" | "IKIRUN";
 
 type PrismaUserStatus = "ACTIVE" | "SUSPENDED";
 
@@ -53,6 +53,7 @@ function toHub(hub: PrismaHub): Hub {
     EDE: "Ede",
     ILE_IFE: "Ile-Ife",
     ILESA: "Ilesa",
+    IKIRUN: "Ikirun",
   };
 
   return map[hub] ?? "All";
@@ -81,6 +82,7 @@ function fromHub(hub: Hub): PrismaHub {
     Ede: "EDE",
     "Ile-Ife": "ILE_IFE",
     Ilesa: "ILESA",
+    Ikirun: "IKIRUN",
   };
 
   return map[hub];

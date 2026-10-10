@@ -8,7 +8,14 @@ export const ROLES = [
 
 export type Role = (typeof ROLES)[number];
 
-export const HUBS = ["All", "Osogbo", "Ede", "Ile-Ife", "Ilesa"] as const;
+export const HUBS = [
+  "All",
+  "Osogbo",
+  "Ikirun",
+  "Ede",
+  "Ile-Ife",
+  "Ilesa",
+] as const;
 export type Hub = (typeof HUBS)[number];
 
 export const USER_STATUSES = ["Active", "Suspended"] as const;

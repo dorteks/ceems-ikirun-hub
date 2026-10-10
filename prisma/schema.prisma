@@ -81,6 +81,7 @@ enum Hub {
   EDE
   ILE_IFE
   ILESA
+  IKIRUN
 }
 
 enum UserStatus {

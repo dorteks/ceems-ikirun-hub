@@ -13,7 +13,7 @@ export type UserRow = {
     | "SUPERVISOR"
     | "ENUMERATOR"
     | "VIEWER";
-  hub: "ALL" | "OSOGBO" | "EDE" | "ILE_IFE" | "ILESA";
+  hub: "ALL" | "OSOGBO" | "EDE" | "ILE_IFE" | "ILESA" | "IKIRUN";
   status: "ACTIVE" | "SUSPENDED";
   password_hash: string;
   must_change_password: boolean;

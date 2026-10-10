@@ -65,8 +65,7 @@
 :root {
   color-scheme: light;
 
-  /* Core neutral ramp — unchanged; both source themes use near-identical
-   * neutral grays, so this wasn't touched. */
+  /* Neutral surfaces and text. */
   --el-neutral-0: #ffffff;
   --el-neutral-50: #f7f9fc;
   --el-neutral-100: #eff2f8;
@@ -80,26 +79,18 @@
   --el-neutral-900: #1c1f2b;
   --el-neutral-950: #0d1019;
 
-  /*
-   * Brand ramp — replaced with the CEEMS theme's primary hue (231deg,
-   * oklch(0.44 0.099 231)) instead of the old #0a63f5 blue. This is the
-   * BASE ramp: it applies to Super Administrator (full access, no scoping
-   * needed) and to any route with no [data-dashboard-domain] attribute.
-   * Built on the same lightness curve as the per-role ramps below
-   * (0.9658 -> 0.2142), chroma scaled to peak at 0.099 at step 600 to match
-   * the source primary exactly.
-   */
-  --el-brand-50: oklch(0.9658 0.0069 231);
-  --el-brand-100: oklch(0.9283 0.0147 231);
-  --el-brand-200: oklch(0.8577 0.0299 231);
-  --el-brand-300: oklch(0.7732 0.0493 231);
-  --el-brand-400: oklch(0.674 0.0737 231);
-  --el-brand-500: oklch(0.5941 0.0948 231);
-  --el-brand-600: oklch(0.55 0.099 231);
-  --el-brand-700: oklch(0.4854 0.0925 231);
-  --el-brand-800: oklch(0.4031 0.0735 231);
-  --el-brand-900: oklch(0.3127 0.05 231);
-  --el-brand-950: oklch(0.2142 0.0319 231);
+  /* Shared brand palette for every route and role, including portals. */
+  --el-brand-50: oklch(0.9658 0.0089 122);
+  --el-brand-100: oklch(0.9283 0.019 122);
+  --el-brand-200: oklch(0.8577 0.0387 122);
+  --el-brand-300: oklch(0.7732 0.0638 122);
+  --el-brand-400: oklch(0.674 0.0953 122);
+  --el-brand-500: oklch(0.5941 0.1227 122);
+  --el-brand-600: oklch(0.55 0.1281 122);
+  --el-brand-700: oklch(0.4854 0.1142 122);
+  --el-brand-800: oklch(0.4031 0.0949 122);
+  --el-brand-900: oklch(0.3127 0.0648 122);
+  --el-brand-950: oklch(0.2142 0.0413 122);
 
   --el-highlight-50: #effdfb;
   --el-highlight-100: #d0f7f0;
@@ -144,12 +135,12 @@
 
   --primary: var(--el-brand-600);
   --primary-foreground: var(--el-neutral-0);
-  --secondary: var(--el-neutral-50);
-  --secondary-foreground: var(--el-neutral-900);
+  --secondary: var(--el-brand-50);
+  --secondary-foreground: var(--el-brand-900);
   --muted: var(--el-neutral-100);
   --muted-foreground: var(--el-neutral-600);
-  --accent: var(--el-brand-600);
-  --accent-foreground: var(--el-neutral-0);
+  --accent: var(--el-brand-100);
+  --accent-foreground: var(--el-brand-900);
 
   /* Status colors carried over directly from the CEEMS theme's oklch values. */
   --destructive: oklch(0.577 0.222 25);
@@ -171,19 +162,15 @@
   --chart-4: var(--el-accent-jade);
   --chart-5: var(--el-accent-blush);
 
-  /*
-   * Sidebar — carries over the CEEMS theme's signature "always-dark sidebar"
-   * (dark even while the rest of the UI is in light mode), with the accent
-   * still tied to the active role's brand ramp so it re-themes per dashboard.
-   */
-  --sidebar: var(--el-neutral-900);
+  /* Dark brand-colored navigation in both color modes. */
+  --sidebar: var(--el-brand-950);
   --sidebar-foreground: var(--el-neutral-100);
-  --sidebar-primary: var(--el-brand-600);
-  --sidebar-primary-foreground: var(--el-neutral-0);
-  --sidebar-accent: var(--el-neutral-800);
+  --sidebar-primary: var(--el-brand-400);
+  --sidebar-primary-foreground: var(--el-brand-950);
+  --sidebar-accent: var(--el-brand-900);
   --sidebar-accent-foreground: var(--el-neutral-50);
-  --sidebar-border: var(--el-neutral-700);
-  --sidebar-ring: var(--el-brand-500);
+  --sidebar-border: var(--el-brand-800);
+  --sidebar-ring: var(--el-brand-400);
 }
 
 .dark {
@@ -202,8 +189,8 @@
   --secondary-foreground: var(--el-neutral-50);
   --muted: color-mix(in oklch, var(--el-neutral-800) 60%, black);
   --muted-foreground: var(--el-neutral-300);
-  --accent: var(--el-accent-iris);
-  --accent-foreground: var(--el-neutral-50);
+  --accent: var(--el-brand-800);
+  --accent-foreground: var(--el-brand-50);
 
   --destructive: color-mix(in oklch, oklch(0.577 0.222 25) 80%, black);
   --destructive-foreground: var(--el-neutral-0);
@@ -224,116 +211,18 @@
   --chart-4: var(--el-accent-jade);
   --chart-5: var(--el-accent-blush);
 
-  --sidebar: color-mix(in oklch, var(--el-neutral-950) 80%, black);
+  --sidebar: color-mix(in oklch, var(--el-brand-950) 80%, black);
   --sidebar-foreground: var(--el-neutral-100);
   --sidebar-primary: var(--el-brand-400);
   --sidebar-primary-foreground: var(--el-neutral-950);
   --sidebar-accent: color-mix(
     in oklch,
-    var(--el-neutral-800) 55%,
-    var(--el-neutral-950) 45%
+    var(--el-brand-800) 55%,
+    var(--el-brand-950) 45%
   );
   --sidebar-accent-foreground: var(--el-neutral-50);
-  --sidebar-border: color-mix(in oklch, var(--el-neutral-800) 70%, black);
+  --sidebar-border: color-mix(in oklch, var(--el-brand-800) 70%, black);
   --sidebar-ring: var(--el-brand-400);
-}
-
-/* ---------------------------------------------------------------------------
- * Per-dashboard (per-role) brand theming — CEEMS roles
- *
- * Every brand-derived token (--primary, --accent, --ring, --sidebar-primary,
- * --sidebar-ring, --chart-1) resolves from the --el-brand-* ramp, so
- * re-pointing the ramp re-themes the whole dashboard with no component
- * changes.
- *
- * `:root:has(...)` is used (not a descendant selector) because custom
- * properties are substituted where they're *declared*. Hoisting the
- * override onto :root also covers Radix portals (dropdowns, dialogs,
- * sheets, toasts) that render into document.body.
- *
- * `data-dashboard-domain` should be server-rendered on the role-scoped
- * layout so the correct ramp is present in the first painted HTML (no
- * theme flash). Super Administrator carries no such attribute and uses
- * the base ramp above, since it has full system access.
- *
- * Hues are kept >=30deg from the chart series colors (iris 285, amber 78,
- * jade 165, blush 348) so brand-vs-series stays readable. The original
- * `course_creator` slot (316deg) has no CEEMS role and was dropped.
- * ------------------------------------------------------------------------- */
-
-/* Administrator — 232deg. Steel blue; administrative/operational access. */
-:root:has([data-dashboard-domain="administrator"]) {
-  --el-brand-50: oklch(0.9658 0.0075 232);
-  --el-brand-100: oklch(0.9283 0.016 232);
-  --el-brand-200: oklch(0.8577 0.0325 232);
-  --el-brand-300: oklch(0.7732 0.0536 232);
-  --el-brand-400: oklch(0.674 0.0801 232);
-  --el-brand-500: oklch(0.5941 0.1032 232);
-  --el-brand-600: oklch(0.55 0.1077 232);
-  --el-brand-700: oklch(0.4854 0.0961 232);
-  --el-brand-800: oklch(0.4031 0.0798 232);
-  --el-brand-900: oklch(0.3127 0.0545 232);
-  --el-brand-950: oklch(0.2142 0.0347 232);
-}
-
-/* Data Manager — 195deg. Teal; data management and imports. */
-:root:has([data-dashboard-domain="data_manager"]) {
-  --el-brand-50: oklch(0.9658 0.0076 195);
-  --el-brand-100: oklch(0.9283 0.0163 195);
-  --el-brand-200: oklch(0.8577 0.0332 195);
-  --el-brand-300: oklch(0.7732 0.0548 195);
-  --el-brand-400: oklch(0.674 0.0818 195);
-  --el-brand-500: oklch(0.5941 0.0983 195);
-  --el-brand-600: oklch(0.545 0.11 195);
-  --el-brand-700: oklch(0.4854 0.0803 195);
-  --el-brand-800: oklch(0.4031 0.0667 195);
-  --el-brand-900: oklch(0.3127 0.0518 195);
-  --el-brand-950: oklch(0.2142 0.0355 195);
-}
-
-/* Supervisor — 265deg. Blue-violet; enumeration and operational oversight. */
-:root:has([data-dashboard-domain="supervisor"]) {
-  --el-brand-50: oklch(0.9658 0.0104 265);
-  --el-brand-100: oklch(0.9283 0.0222 265);
-  --el-brand-200: oklch(0.8577 0.0453 265);
-  --el-brand-300: oklch(0.7732 0.0747 265);
-  --el-brand-400: oklch(0.674 0.1116 265);
-  --el-brand-500: oklch(0.5941 0.1437 265);
-  --el-brand-600: oklch(0.55 0.15 265);
-  --el-brand-700: oklch(0.4854 0.1401 265);
-  --el-brand-800: oklch(0.4031 0.1114 265);
-  --el-brand-900: oklch(0.3127 0.0758 265);
-  --el-brand-950: oklch(0.2142 0.0484 265);
-}
-
-/* Enumerator — 122deg. Green; active field-enumeration role. */
-:root:has([data-dashboard-domain="enumerator"]) {
-  --el-brand-50: oklch(0.9658 0.0089 122);
-  --el-brand-100: oklch(0.9283 0.019 122);
-  --el-brand-200: oklch(0.8577 0.0387 122);
-  --el-brand-300: oklch(0.7732 0.0638 122);
-  --el-brand-400: oklch(0.674 0.0953 122);
-  --el-brand-500: oklch(0.5941 0.1227 122);
-  --el-brand-600: oklch(0.55 0.1281 122);
-  --el-brand-700: oklch(0.4854 0.1142 122);
-  --el-brand-800: oklch(0.4031 0.0949 122);
-  --el-brand-900: oklch(0.3127 0.0648 122);
-  --el-brand-950: oklch(0.2142 0.0413 122);
-}
-
-/* Viewer — 34deg. Muted warm terracotta; passive, read-only access. */
-:root:has([data-dashboard-domain="viewer"]) {
-  --el-brand-50: oklch(0.9658 0.0104 34);
-  --el-brand-100: oklch(0.9283 0.0222 34);
-  --el-brand-200: oklch(0.8577 0.0453 34);
-  --el-brand-300: oklch(0.7732 0.0747 34);
-  --el-brand-400: oklch(0.674 0.1116 34);
-  --el-brand-500: oklch(0.5941 0.1437 34);
-  --el-brand-600: oklch(0.55 0.15 34);
-  --el-brand-700: oklch(0.4854 0.1401 34);
-  --el-brand-800: oklch(0.4031 0.1114 34);
-  --el-brand-900: oklch(0.3127 0.0758 34);
-  --el-brand-950: oklch(0.2142 0.0484 34);
 }
 
 @layer base {

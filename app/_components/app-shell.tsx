@@ -124,7 +124,7 @@ function Brand() {
       </span>
       <div className="leading-tight">
         <p className="text-sm font-semibold text-sidebar-accent-foreground">
-          CEEMS
+          CEEMS IKIRUN HUB
         </p>
         <p className="text-xs text-sidebar-foreground/70">
           Enumeration Platform
@@ -176,7 +176,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
-      <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col bg-gray-900 lg:flex">
+      <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col bg-sidebar lg:flex">
         <Brand />
         <NavList />
 

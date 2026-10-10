@@ -106,7 +106,8 @@ export const Hub = {
   OSOGBO: 'OSOGBO',
   EDE: 'EDE',
   ILE_IFE: 'ILE_IFE',
-  ILESA: 'ILESA'
+  ILESA: 'ILESA',
+  IKIRUN: 'IKIRUN'
 } as const
 
 export type Hub = (typeof Hub)[keyof typeof Hub]

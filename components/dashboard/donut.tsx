@@ -56,7 +56,7 @@ export function Donut({
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="#f1f5f9"
+        stroke="var(--muted)"
         strokeWidth={stroke}
       />
 
@@ -83,7 +83,7 @@ export function Donut({
           x="50%"
           y="47%"
           textAnchor="middle"
-          fill="#0F172A"
+          fill="var(--foreground)"
           style={{
             fontSize: 20,
             fontWeight: 700,
@@ -99,7 +99,7 @@ export function Donut({
           x="50%"
           y="60%"
           textAnchor="middle"
-          fill="#64748B"
+          fill="var(--muted-foreground)"
           style={{
             fontSize: 11,
           }}
