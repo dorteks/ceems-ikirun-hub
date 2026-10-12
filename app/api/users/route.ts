@@ -4,6 +4,7 @@ import {
   HUBS,
   ROLES,
   createUser,
+  deleteUser,
   getSessionUser,
   listUsers,
   type Hub,
@@ -114,6 +115,64 @@ export async function POST(req: Request) {
     console.error(error);
     return NextResponse.json(
       { error: "Failed to create user" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+    }
+
+    if (user.role !== "Super Administrator") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const body = (await req.json().catch(() => ({}))) as Record<
+      string,
+      unknown
+    >;
+    const username = String(body.username ?? "").trim();
+    const userId = Number(body.userId);
+    const identifier = username || (Number.isInteger(userId) ? userId : null);
+
+    if (identifier == null || identifier === "") {
+      return NextResponse.json(
+        { error: "Missing username or userId" },
+        { status: 400 },
+      );
+    }
+
+    const result = await deleteUser(identifier, user.username);
+
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
+
+    await recordAuditEvent({
+      actorName: user.name,
+      actorUsername: user.username,
+      actorRole: user.role,
+      action: "Deleted user",
+      entityType: "user",
+      entityId: result.user.id,
+      entityLabel: result.user.username,
+      beforeValue: `${result.user.role} · ${result.user.hub}`,
+      afterValue: "removed",
+      metadata: {
+        status: result.user.status,
+        source: "admin-user-delete",
+      },
+    });
+
+    return NextResponse.json({ user: result.user }, { status: 200 });
+  } catch (error: unknown) {
+    console.error(error);
+    return NextResponse.json(
+      { error: "Failed to delete user" },
       { status: 500 },
     );
   }

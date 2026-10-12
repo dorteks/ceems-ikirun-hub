@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { HUBS, ROLES, type Hub, type Role, useAuth } from "@/lib/auth/auth";
 import { generateTemporaryPassword } from "@/lib/auth/password";
+import Spinner from "@/components/ui/spinner";
 
 export function InviteUserDialog() {
   const { inviteUser, isSuperAdmin } = useAuth();
@@ -37,6 +38,7 @@ export function InviteUserDialog() {
   const [hub, setHub] = useState<Hub>("Osogbo");
   const [password, setPassword] = useState(() => generateTemporaryPassword());
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   if (!isSuperAdmin) return null;
 
@@ -60,35 +62,44 @@ export function InviteUserDialog() {
           className="space-y-4"
           onSubmit={async (e) => {
             e.preventDefault();
-            const res = await inviteUser({
-              name,
-              username,
-              email,
-              phone,
-              role,
-              hub,
-              password,
-            });
-            if (!res.ok) {
-              setError(res.error ?? "Unable to create account.");
-              return;
-            }
+            if (submitting) return;
+
+            setSubmitting(true);
             setError(null);
-            setOpen(false);
-            setName("");
-            setUsername("");
-            setEmail("");
-            setPhone("");
-            setPassword(generateTemporaryPassword());
-            toast.success(
-              `Account created for ${username}. Temporary password generated.`,
-            );
-            if (res.generatedPassword) {
-              navigator.clipboard
-                ?.writeText(res.generatedPassword)
-                .catch(() => {
-                  // ignore clipboard failures
-                });
+
+            try {
+              const res = await inviteUser({
+                name,
+                username,
+                email,
+                phone,
+                role,
+                hub,
+                password,
+              });
+              if (!res.ok) {
+                setError(res.error ?? "Unable to create account.");
+                return;
+              }
+              setError(null);
+              setOpen(false);
+              setName("");
+              setUsername("");
+              setEmail("");
+              setPhone("");
+              setPassword(generateTemporaryPassword());
+              toast.success(
+                `Account created for ${username}. Temporary password generated.`,
+              );
+              if (res.generatedPassword) {
+                navigator.clipboard
+                  ?.writeText(res.generatedPassword)
+                  .catch(() => {
+                    // ignore clipboard failures
+                  });
+              }
+            } finally {
+              setSubmitting(false);
             }
           }}
         >
@@ -224,10 +235,20 @@ export function InviteUserDialog() {
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
+              disabled={submitting}
             >
               Cancel
             </Button>
-            <Button type="submit">Create account</Button>
+            <Button type="submit" disabled={submitting}>
+              {submitting ? (
+                <>
+                  <Spinner />
+                  Creating...
+                </>
+              ) : (
+                "Create account"
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

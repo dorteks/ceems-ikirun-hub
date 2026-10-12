@@ -216,7 +216,7 @@ export default function Dashboard() {
         </Card>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {(data?.kpis ?? []).map((kpi) => (
           <Card key={kpi.label}>
             <CardHeader className="pb-2">

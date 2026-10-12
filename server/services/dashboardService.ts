@@ -1,13 +1,7 @@
 import { prisma } from "@/server/db/prisma";
 import { Prisma } from "@/generated/prisma/client";
 import { listRecentActivity, type AuditEventRecord } from "./auditService";
-
-export type DashboardKpi = {
-  label: string;
-  value: string;
-  delta: string;
-  tone: "primary" | "success" | "warning" | "destructive";
-};
+import { buildKpis, type DashboardKpi } from "./dashboardMetrics";
 
 export type DashboardTrendPoint = {
   month: string;
@@ -41,7 +35,8 @@ export type DashboardData = {
 
 type CustomerStatsRow = {
   total_customers: number;
-  enumerated_customers: number;
+  enumerated_total: number;
+  enumerated_today: number;
   unmetered_customers: number;
   quality_issues: number;
   created_this_month: number;
@@ -75,7 +70,12 @@ async function getCustomerStats() {
       COUNT(*)::int AS total_customers,
       COUNT(*) FILTER (
         WHERE updated_by IS NOT NULL
-      )::int AS enumerated_customers,
+      )::int AS enumerated_total,
+      COUNT(*) FILTER (
+        WHERE updated_by IS NOT NULL
+          AND updated_at >= date_trunc('day', CURRENT_DATE)
+          AND updated_at < date_trunc('day', CURRENT_DATE) + INTERVAL '1 day'
+      )::int AS enumerated_today,
       COUNT(*) FILTER (
         WHERE meter_number IS NULL OR meter_number = '' OR status = 'PENDING'
       )::int AS unmetered_customers,
@@ -95,7 +95,8 @@ async function getCustomerStats() {
   return (
     row ?? {
       total_customers: 0,
-      enumerated_customers: 0,
+      enumerated_total: 0,
+      enumerated_today: 0,
       unmetered_customers: 0,
       quality_issues: 0,
       created_this_month: 0,
@@ -208,43 +209,16 @@ async function getEnumerationBatches() {
   });
 }
 
-function buildKpis(stats: CustomerStatsRow): DashboardKpi[] {
-  const enumeratedPct = stats.total_customers
-    ? ((stats.enumerated_customers / stats.total_customers) * 100).toFixed(2)
-    : "0.00";
-
-  const unmeteredPct = stats.total_customers
-    ? ((stats.unmetered_customers / stats.total_customers) * 100).toFixed(2)
-    : "0.00";
-
-  const monthDelta = stats.created_this_month - stats.created_last_month;
-
-  return [
-    {
-      label: "Total customers",
-      value: stats.total_customers.toLocaleString(),
-      delta: `${monthDelta >= 0 ? "+" : ""}${monthDelta.toLocaleString()} this month`,
-      tone: "primary",
-    },
-    {
-      label: "Enumerated",
-      value: stats.enumerated_customers.toLocaleString(),
-      delta: `${enumeratedPct}% coverage`,
-      tone: "success",
-    },
-    {
-      label: "Unmetered accounts",
-      value: stats.unmetered_customers.toLocaleString(),
-      delta: `${unmeteredPct}% of base`,
-      tone: "warning",
-    },
-    {
-      label: "Awaiting enumeration",
-      value: stats.quality_issues.toLocaleString(),
-      delta: "Needs to be enumerated",
-      tone: "destructive",
-    },
-  ];
+function buildDashboardKpis(stats: CustomerStatsRow): DashboardKpi[] {
+  return buildKpis({
+    total_customers: stats.total_customers,
+    enumerated_total: stats.enumerated_total,
+    enumerated_today: stats.enumerated_today,
+    unmetered_customers: stats.unmetered_customers,
+    quality_issues: stats.quality_issues,
+    created_this_month: stats.created_this_month,
+    created_last_month: stats.created_last_month,
+  });
 }
 
 export async function getDashboardData(): Promise<DashboardData> {
@@ -258,7 +232,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     ]);
 
   return {
-    kpis: buildKpis(stats),
+    kpis: buildDashboardKpis(stats),
     trend,
     feederBandSplit,
     enumerationBatches,

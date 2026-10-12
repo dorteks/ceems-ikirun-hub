@@ -326,6 +326,44 @@ export async function resetUserPassword(
   };
 }
 
+export async function deleteUser(
+  identifier: number | string,
+  actorUsername: string | null,
+) {
+  const user = await getUserForReset(identifier);
+
+  if (!user) {
+    return { ok: false as const, error: "User not found." };
+  }
+
+  if (user.username === actorUsername) {
+    return {
+      ok: false as const,
+      error: "You cannot delete your own account.",
+    };
+  }
+
+  if (user.role === "SUPER_ADMINISTRATOR") {
+    const superAdminCount = await prisma.user.count({
+      where: { role: "SUPER_ADMINISTRATOR" },
+    });
+
+    if (superAdminCount <= 1) {
+      return {
+        ok: false as const,
+        error: "At least one Super Administrator must remain.",
+      };
+    }
+  }
+
+  const deleted = await prisma.user.delete({ where: { id: user.id } });
+
+  return {
+    ok: true as const,
+    user: serializeUser(deleted),
+  };
+}
+
 export async function getSessionUser(userId: number) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   return user ? serializeUser(user) : null;

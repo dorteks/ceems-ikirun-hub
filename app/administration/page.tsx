@@ -1,6 +1,8 @@
 "use client";
 
-import { ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { ShieldCheck, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -24,7 +26,9 @@ import { PageHeader } from "../_components/app-shell";
 import { StatusBadge } from "../_components/status-badge";
 import { InviteUserDialog } from "../_components/invite-user-dialog";
 import { ResetPasswordDialog } from "../_components/reset-password-dialog";
-import { useAuth } from "@/lib/auth/auth";
+import { useAuth, type AccountRecord } from "@/lib/auth/auth";
+import { Button } from "@/components/ui/button";
+import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 
 // export const Route = createFileRoute("/administration")({
 //   head: () => ({
@@ -68,7 +72,32 @@ function initials(name: string) {
 }
 
 export default function AdminPage() {
-  const { accounts, user, isSuperAdmin } = useAuth();
+  const { accounts, user, isSuperAdmin, deleteUser } = useAuth();
+  const [deleteTarget, setDeleteTarget] = useState<AccountRecord | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  const handleDeleteUser = async () => {
+    if (!deleteTarget) return;
+
+    setDeletingId(deleteTarget.id);
+
+    try {
+      const result = await deleteUser(deleteTarget.username);
+
+      if (!result.ok) {
+        throw new Error(result.error ?? "Unable to remove user.");
+      }
+
+      toast.success(`${deleteTarget.name} removed successfully.`);
+      setDeleteTarget(null);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Unable to remove user.",
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (!isSuperAdmin) {
     return (
@@ -160,17 +189,33 @@ export default function AdminPage() {
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           <Badge
-                            variant={u.mustChangePassword ? "destructive" : "secondary"}
+                            variant={
+                              u.mustChangePassword ? "destructive" : "secondary"
+                            }
                             className="rounded-sm"
                           >
                             {u.mustChangePassword ? "Temporary" : "Set"}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <ResetPasswordDialog
-                            username={u.username}
-                            name={u.name}
-                          />
+                          <div className="flex justify-end gap-2">
+                            <ResetPasswordDialog
+                              username={u.username}
+                              name={u.name}
+                            />
+                            {u.username !== user?.username && (
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => setDeleteTarget(u)}
+                                disabled={deletingId === u.id}
+                              >
+                                <Trash2 className="size-4" />
+                                Remove
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -179,6 +224,18 @@ export default function AdminPage() {
               </div>
             </CardContent>
           </Card>
+          <DeleteConfirmationDialog
+            open={Boolean(deleteTarget)}
+            onOpenChange={(open) => {
+              if (!open) setDeleteTarget(null);
+            }}
+            onConfirm={handleDeleteUser}
+            title="Remove user?"
+            description={`This will permanently delete ${deleteTarget?.name ?? "this user"} from the system. This action cannot be undone. You can add them back later if needed.`}
+            confirmLabel="Remove user"
+            isDeleting={deletingId !== null}
+            confirmationText={deleteTarget?.username ?? ""}
+          />
         </TabsContent>
 
         <TabsContent value="permissions" className="pt-4">

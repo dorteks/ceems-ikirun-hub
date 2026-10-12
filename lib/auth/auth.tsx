@@ -40,6 +40,10 @@ interface AuthValue {
     error?: string;
     generatedPassword?: string;
   }>;
+  deleteUser: (username: string) => Promise<{
+    ok: boolean;
+    error?: string;
+  }>;
   canManageHub: (hub: string) => boolean;
   isSuperAdmin: boolean;
   isDataManager: boolean;
@@ -108,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const isEnumerator = user?.role === "Enumerator";
     const isViewer = user?.role === "Viewer";
 
-    const adminAccess = isSuperAdmin || isDataManager;
+    const adminAccess = isSuperAdmin || isDataManager || isSupervisor;
 
     return {
       ready,
@@ -271,6 +275,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           ok: true as const,
           generatedPassword: data.generatedPassword,
         };
+      },
+      deleteUser: async (username) => {
+        if (!isSuperAdmin) {
+          return {
+            ok: false as const,
+            error: "Only a Super Administrator can delete accounts.",
+          };
+        }
+
+        const response = await fetch("/api/users", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ username }),
+        });
+        const data = (await response.json().catch(() => null)) as {
+          error?: string;
+          user?: UserRecord;
+        } | null;
+
+        if (!response.ok || !data?.user) {
+          return {
+            ok: false as const,
+            error: data?.error ?? "Unable to delete account.",
+          };
+        }
+
+        setAccounts((current) =>
+          current.filter((account) => account.id !== data.user!.id),
+        );
+
+        return { ok: true as const };
       },
       canManageHub: (hub: string) =>
         !!user && (user.hub === "All" || user.hub === hub),
